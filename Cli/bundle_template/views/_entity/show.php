@@ -1,1 +1,0 @@
-<h1><% echo $<?php echo $entity['meta']['name'] ?> %></h1>

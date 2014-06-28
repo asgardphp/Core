@@ -1,11 +1,14 @@
 <?php
-namespace Asgard\Core\Console;
+namespace Asgard\Core\Commands;
+
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class ConsoleCommand extends \Asgard\Console\Command {
 	protected $name = 'console';
 	protected $description = 'Interact with your application';
 
-	protected function execute() {
+	protected function execute(InputInterface $input, OutputInterface $output) {
 		$this->output->writeln('Type "quit" to quit.');
 
 		$dialog = $this->getHelperSet()->get('dialog');
@@ -19,7 +22,7 @@ class ConsoleCommand extends \Asgard\Console\Command {
 					$cmd .= ';';
 				eval($cmd);
 			} catch(\Exception $e) {
-				$this->output->writeln('<error>'.$e->getMessage().'</error>');
+				$this->error($e->getMessage());
 			}
 
 			$cmd = $dialog->ask($this->output, '>');

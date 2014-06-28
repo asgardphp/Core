@@ -1,6 +1,8 @@
 <?php
-namespace Asgard\Core\Console;
+namespace Asgard\Core\Commands;
 
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 
@@ -8,11 +10,11 @@ class InstallCommand extends \Asgard\Console\Command {
 	protected $name = 'install';
 	protected $description = 'Install a module into your application';
 
-	protected function execute() {
+	protected function execute(InputInterface $input, OutputInterface $output) {
 		$sources = $this->input->getArgument('sources');
 		$migrate = $this->input->getOption('migrate');
 		$updateComposer = $this->input->getOption('update-composer');
-		$root = $this->getAsgard()['kernel']['root'];
+		$root = $this->getContainer()['kernel']['root'];
 		if(file_exists($root.'/modules.json'))
 			$modules = json_decode(file_get_contents($root.'/modules.json'), true);
 		else
@@ -35,19 +37,19 @@ class InstallCommand extends \Asgard\Console\Command {
 		$tmp = sys_get_temp_dir().'/'.\Asgard\Common\Tools::randStr(10);
 
 		if(!$this->gitInstall($src, $tmp)) {
-			$this->output->writeln('<error>The files could not be downloaded.</error>');
+			$this->error('The files could not be downloaded.');
 			return;
 		}
 
 		if(!file_exists($tmp.'/asgard.json')) {
-			$this->output->write('<error>asgard.json is missing for '.$src.'.</error>');
+			$this->error('asgard.json is missing for '.$src.'.');
 			continue;
 		}
 
 		foreach(glob($tmp.'/app/*') as $dir) {
 			$dir = basename($dir);
 			if(file_exists($root.'/app/'.$dir)) {
-				$this->output->write('<error>Some of the app files already exists for '.$src.'.</error>');
+				$this->error('Some of the app files already exists for '.$src.'.');
 				continue 2;
 			}
 		}
@@ -55,7 +57,7 @@ class InstallCommand extends \Asgard\Console\Command {
 		foreach(glob($tmp.'/Migrations/*') as $dir) {
 			$dir = basename($dir);
 			if(file_exists($root.'/Migrations/'.$dir)) {
-				$this->output->write('<error>Some of the migration files already exists for '.$src.'.</error>');
+				$this->error('Some of the migration files already exists for '.$src.'.');
 				continue 2;
 			}
 		}
@@ -65,14 +67,14 @@ class InstallCommand extends \Asgard\Console\Command {
 		else
 			$asgard = [];
 		if(!isset($asgard['name'])) {
-			$this->output->write('<error>Name missing for '.$src.'.</error>');
+			$this->error('Name missing for '.$src.'.');
 			continue;
 		}
 		else
 			$name = $asgard['name'];
 
 		if(in_array($name, $modules)) {
-			$this->output->write($name.' has already been installed.');
+			$this->comment($name.' has already been installed.');
 			continue;
 		}
 
@@ -126,7 +128,7 @@ class InstallCommand extends \Asgard\Console\Command {
 		$modules[] = $name;
 		file_put_contents($root.'/modules.json', json_encode($modules, JSON_PRETTY_PRINT));
 
-		$this->output->writeln('<info>Module "'.$name.'" installed with success.</info>');
+		$this->info('Module "'.$name.'" installed with success.');
 	}
 
 	protected function gitInstall($src, $tmp) {

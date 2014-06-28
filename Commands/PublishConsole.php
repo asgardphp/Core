@@ -1,6 +1,8 @@
 <?php
-namespace Asgard\Core\Console;
+namespace Asgard\Core\Commands;
 
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 
@@ -8,7 +10,7 @@ class PublishCommand extends \Asgard\Console\Command {
 	protected $name = 'publish';
 	protected $description = 'Publish a bundle files';
 
-	protected function execute() {
+	protected function execute(InputInterface $input, OutputInterface $output) {
 		$bundle = $this->input->getArgument('bundle');
 
 		$publishAll = $this->input->getOption('all');
@@ -19,38 +21,38 @@ class PublishCommand extends \Asgard\Console\Command {
 		$publishWeb = $publishAll || $this->input->getOption('web');
 
 		$migrate = $this->input->getOption('migrate');
-		$root = $this->getAsgard()['kernel']['root'];
+		$root = $this->getContainer()['kernel']['root'];
 
 		$publisher = new Publisher();
 
 		#copy app
 		if($publishApp && file_exists($bundle.'/app')) {
 			$publisher->publish($bundle.'/app', $root.'/app');
-			$this->output->writeln('<info>App files have been published.</info');
+			$this->info('App files have been published.');
 		}
 
 		#copy config
 		if($publishConfig && file_exists($bundle.'/config')) {
 			$publisher->publish($bundle.'/config', $root.'/config');
-			$this->output->writeln('<info>App files have been published.</info');
+			$this->info('Config files have been published.');
 		}
 
 		#copy tests
 		if($publishTests && file_exists($bundle.'/Tests')) {
 			$publisher->publish($bundle.'/Tests', $root.'/Tests');
-			$this->output->writeln('<info>App files have been published.</info');
+			$this->info('Test files have been published.');
 		}
 
 		#copy web
 		if($publishWeb && file_exists($bundle.'/web')) {
 			$publisher->publish($bundle.'/web', $root.'/web');
-			$this->output->writeln('<info>App files have been published.</info');
+			$this->info('Web files have been published.');
 		}
 
 		#copy migrations
 		if($publishMigrations && file_exists($bundle.'/Migrations/migrations.json')) {
 			$publisher->publishMigrations($bundle.'/Migrations', $root.'/Migrations', $migrate);
-			$this->output->writeln('<info>App files have been published.</info');
+			$this->info('Migration files have been published.');
 		}
 	}
 

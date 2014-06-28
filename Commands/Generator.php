@@ -1,5 +1,5 @@
 <?php
-namespace Asgard\Core\Console;
+namespace Asgard\Core\Commands;
 
 class Generator {
 	protected $app;
@@ -30,7 +30,7 @@ class Generator {
 		$content = str_replace('<%=', '<?=', $content);
 		$content = str_replace('%>', '?>', $content);
 
-		\Asgard\Common\FileManager::put($_dst, $content);
+		\Asgard\File\FileSystem::write($_dst, $content);
 	}
 
 	public function outputPHP($v) {

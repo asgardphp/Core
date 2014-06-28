@@ -1,13 +1,15 @@
 <?php
-namespace Asgard\Core\Console;
+namespace Asgard\Core\Commands;
 
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 
 class ExecuteCommand extends \Asgard\Console\Command {
 	protected $name = 'execute';
 	protected $description = 'Execute PHP code in the application context';
 
-	protected function execute() {
+	protected function execute(InputInterface $input, OutputInterface $output) {
 		$cmd = $this->input->getArgument('cmd');
 		try {
 			if(preg_match('/^dump /', $cmd))
@@ -16,7 +18,7 @@ class ExecuteCommand extends \Asgard\Console\Command {
 				$cmd .= ';';
 			eval($cmd);
 		} catch(\Exception $e) {
-			$this->output->writeln('<error>'.$e->getMessage().'</error>');
+			$this->error($e->getMessage());
 		}
 	}
 

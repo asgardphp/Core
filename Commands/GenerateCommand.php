@@ -1,6 +1,8 @@
 <?php
-namespace Asgard\Core\Console;
+namespace Asgard\Core\Commands;
 
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 
@@ -8,8 +10,8 @@ class GenerateCommand extends \Asgard\Console\Command {
 	protected $name = 'generate';
 	protected $description = 'Generate bundles from a single YAML file';
 
-	protected function execute() {
-		$asgard = $this->getAsgard();
+	protected function execute(InputInterface $input, OutputInterface $output) {
+		$asgard = $this->getContainer();
 		$path = $this->input->getArgument('path');
 		$root = $asgard['kernel']['root'].'/';
 	
@@ -24,7 +26,7 @@ class GenerateCommand extends \Asgard\Console\Command {
 		foreach($raw as $bundle_name=>$raw_bundle) {
 			if(file_exists($root.'app/'.$bundle_name.'/')) {
 				if($this->input->getOption('override-bundles'))
-					\Asgard\Common\FileManager::rmdir($root.'app/'.$bundle_name.'/');
+					\Asgard\File\FileSystem::delete($root.'app/'.$bundle_name.'/');
 				elseif($this->input->getOption('skip'))
 					continue;
 			}
@@ -128,9 +130,9 @@ class GenerateCommand extends \Asgard\Console\Command {
 
 					if(in_array('index', $entity['front']) || isset($entity['front']['index'])) {
 						if(isset($entity['front']['index']))
-							\Asgard\Common\FileManager::copy($entity['front']['index'], $dst.'views/'.$bundle['entities'][$name]['meta']['name'].'/index.php', false);
+							\Asgard\File\FileSystem::copy($entity['front']['index'], $dst.'views/'.$bundle['entities'][$name]['meta']['name'].'/index.php', false);
 						else
-							$generator->processFile(__DIR__.'/bundle_template/views/_entity/index.php', $dst.'views/'.$bundle['entities'][$name]['meta']['name'].'/index.php', ['bundle'=>$bundle, 'entity'=>$entity]);
+							$generator->processFile(__DIR__.'/bundle_template/html/_entity/index.php', $dst.'views/'.$bundle['entities'][$name]['meta']['name'].'/index.php', ['bundle'=>$bundle, 'entity'=>$entity]);
 						if($bundle['tests']) {
 							$indexRoute = $class::routeFor('index')->getRoute();
 							$tests[$indexRoute] = '
@@ -140,9 +142,9 @@ class GenerateCommand extends \Asgard\Console\Command {
 					}
 					if(in_array('show', $entity['front']) || isset($entity['front']['show'])) {
 						if(isset($entity['front']['show']))
-							\Asgard\Common\FileManager::copy($entity['front']['show'], $dst.'views/'.$bundle['entities'][$name]['meta']['name'].'/show.php', false);
+							\Asgard\File\FileSystem::copy($entity['front']['show'], $dst.'views/'.$bundle['entities'][$name]['meta']['name'].'/show.php', false);
 						else
-							$generator->processFile(__DIR__.'/bundle_template/views/_entity/show.php', $dst.'views/'.$bundle['entities'][$name]['meta']['name'].'/show.php', ['bundle'=>$bundle, 'entity'=>$entity]);
+							$generator->processFile(__DIR__.'/bundle_template/html/_entity/show.php', $dst.'views/'.$bundle['entities'][$name]['meta']['name'].'/show.php', ['bundle'=>$bundle, 'entity'=>$entity]);
 						if($bundle['tests']) {
 							$showRoute = $class::routeFor('show')->getRoute();
 							$tests[$showRoute] = '
@@ -176,7 +178,7 @@ class GenerateCommand extends \Asgard\Console\Command {
 						$content = '';
 						if($params['viewFile'])
 							$content = file_get_contents($params['viewFile']);
-						\Asgard\Common\FileManager::put($dst.'views/'.strtolower(preg_replace('/Controller$/', '', $controller['name'])).'/'.$params['template'], $content);
+						\Asgard\File\FileSystem::write($dst.'views/'.strtolower(preg_replace('/Controller$/', '', $controller['name'])).'/'.$params['template'], $content);
 					}
 				}
 			}
@@ -188,12 +190,12 @@ class GenerateCommand extends \Asgard\Console\Command {
 
 			if($bundle['tests']) {
 				if(!$this->addToTests($bundle['generatedTests'], $root.'/Tests/'.ucfirst($bundle['name']).'.php'))
-					$this->output->writeln('<comment>'.$root.'/Tests/'.ucfirst($bundle['name']).'.php could not be generated.</comment>');
+					$this->comment($root.'/Tests/'.ucfirst($bundle['name']).'.php could not be generated.');
 			}
 		}
 			
 
-		$this->output->writeln('<info>Bundles created: '.implode(', ', array_keys($bundles)).'</info>');
+		$this->info('Bundles created: '.implode(', ', array_keys($bundles)));
 	}
 
 	protected function addToTests($tests, $dst) {

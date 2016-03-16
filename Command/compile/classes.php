@@ -118,7 +118,7 @@ return array_map('realpath', [
 	$root.'/vendor/asgard/asgard/Http/Browser/Browser.php',
 	$root.'/vendor/asgard/asgard/Http/Controller.php',
 	$root.'/vendor/asgard/asgard/Http/Filter.php',
-	$root.'/vendor/asgard/asgard/Http/Filters/PageLayout.php',
+	$root.'/vendor/asgard/asgard/Http/Filter/PageLayout.php',
 	$root.'/vendor/asgard/asgard/Http/HttpFile.php',
 	$root.'/vendor/asgard/asgard/Http/HttpKernelInterface.php',
 	$root.'/vendor/asgard/asgard/Http/HttpKernel.php',
